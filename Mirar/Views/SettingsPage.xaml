@@ -1,0 +1,149 @@
+﻿<Page
+    x:Class="Mirar.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:Mirar.Helpers"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:c="using:Mirar.Controls"
+    xmlns:models="using:Mirar.Models"
+    xmlns:views="using:Mirar.Views"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
+
+        <DataTemplate x:Key="ItemTemplate" x:DataType="models:Display">
+            <Grid Height="60">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="{StaticResource SmallLeftMargin}"
+                    VerticalAlignment="Center">
+                    <TextBlock Text="{x:Bind DeviceName}" Style="{StaticResource ListTitleStyle}" />
+                    <TextBlock Text="{x:Bind}" Style="{StaticResource ListSubTitleStyle}" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="DetailsTemplate">
+            <Grid>
+                <views:DisplayDetailControl DisplayDetailItem="{Binding}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="NoSelectionContentTemplate">
+            <Grid>
+                <TextBlock
+            x:Uid="List_NoSelection"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            TextAlignment="Center"
+            Style="{ThemeResource SubtitleTextBlockStyle}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ListHeaderTemplate">
+            <Grid Height="40">
+                <TextBlock
+            VerticalAlignment="Center"
+            Style="{StaticResource ListTitleStyle}"
+            Text="{Binding}" />
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="MinimalListHeaderTemplate">
+            <Grid Height="40">
+                <TextBlock
+            Margin="96,0,0,0"
+            VerticalAlignment="Center"
+            Style="{StaticResource ListTitleStyle}"
+            Text="{Binding}" />
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <Grid>
+        <StackPanel x:Name="ContentArea">
+
+            <TextBlock x:Uid="Settings_Projector" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+            <c:OptionSelectorControl x:Uid="Settings_Projector_Display">
+                <c:OptionSelectorControl.Icon>
+                    <FontIcon FontSize="24" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBC6;"/>
+                </c:OptionSelectorControl.Icon>
+                <c:OptionSelectorControl.Container>
+                    <ComboBox PlaceholderText="select" Width="200" ItemsSource="{x:Bind ViewModel.AvailableDisplays, Mode=OneWay}" />
+                </c:OptionSelectorControl.Container>
+            </c:OptionSelectorControl>
+
+            <StackPanel Margin="{StaticResource LargeTopMargin}">
+                <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                <c:OptionSelectorControl x:Uid="Settings_Theme">
+                    <c:OptionSelectorControl.Icon>
+                        <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE790;"/>
+                    </c:OptionSelectorControl.Icon>
+                    <c:OptionSelectorControl.Container>
+                        <ComboBox x:Name="ThemeComboBox" PlaceholderText="select" Width="200" 
+                                  ItemsSource="{x:Bind ViewModel.AvailableThemes, Converter={StaticResource EnumToStringConverter}, Mode=OneWay}"
+                                  SelectedItem="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToStringConverter}, Mode=OneWay}" 
+                                  SelectionChanged="{x:Bind ViewModel.Theme_SelectionChanged}" />
+                    </c:OptionSelectorControl.Container>
+                </c:OptionSelectorControl>
+            </StackPanel>
+
+            <!--<StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                    <RadioButton
+                        x:Uid="Settings_Theme_Light"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                        <RadioButton.CommandParameter>
+                            <xaml:ElementTheme>Light</xaml:ElementTheme>
+                        </RadioButton.CommandParameter>
+                    </RadioButton>
+                    <RadioButton
+                        x:Uid="Settings_Theme_Dark"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                        <RadioButton.CommandParameter>
+                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
+                        </RadioButton.CommandParameter>
+                    </RadioButton>
+                    <RadioButton
+                        x:Uid="Settings_Theme_Default"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                        <RadioButton.CommandParameter>
+                            <xaml:ElementTheme>Default</xaml:ElementTheme>
+                        </RadioButton.CommandParameter>
+                    </RadioButton>
+                </StackPanel>
+            </StackPanel>-->
+
+            <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="{StaticResource LargeTopMargin}" />
+
+            <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
+
+                <TextBlock
+                    x:Uid="Settings_AboutDescription"
+                    Margin="{StaticResource XSmallTopMargin}"
+                    Style="{ThemeResource BodyTextBlockStyle}" />
+                <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

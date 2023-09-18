@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "Mirar (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "Mirar (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
