@@ -15,13 +15,26 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
     // Prevent displaying notification on first run / init
     private bool _initialized = false;
 
+    private int _deviceReferenceCounter = 0;
+    private int _deviceCounter = 0;
+
     public DisplayWatcherService()
     {
         _watcher = DeviceInformation.CreateWatcher(DisplayMonitor.GetDeviceSelector());
+    }
+
+    public async Task InitializeAsync()
+    {
+        var deviceSelector = DisplayMonitor.GetDeviceSelector();
+        var test = await DeviceInformation.FindAllAsync(deviceSelector);
+
+        _deviceReferenceCounter = test.Count;
+
         _watcher.EnumerationCompleted += Watcher_EnumerationCompleted;
         _watcher.Added += Watcher_Added;
         _watcher.Removed += Watcher_Removed;
-        _watcher.Start();
+
+        await StartWatcherAsync();
     }
 
     public async Task StartWatcherAsync()
@@ -34,7 +47,7 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
 
     public async Task StopWatcherAsync()
     {
-        if(_watcher is null) throw new Exception("Device Watcher is null!");
+        if (_watcher is null) throw new Exception("Device Watcher is null!");
         if (_watcher.Status == DeviceWatcherStatus.Stopped) return;
         _watcher.Stop();
         await Task.CompletedTask;
@@ -43,13 +56,18 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
     private void Watcher_EnumerationCompleted(DeviceWatcher sender, object args)
     {
         // Handle EnumerationCompleted event here
-        if(!_initialized) _initialized = true;
-
         Debug.WriteLine("DisplayWatcher: EnumerationCompleted");
     }
 
     private async void Watcher_Added(DeviceWatcher sender, DeviceInformation args)
     {
+        if (_deviceCounter < _deviceReferenceCounter)
+        {
+            _deviceCounter++;
+        }
+        else if (!_initialized) _initialized = true;
+
+
         DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(args.Id);
         if (_initialized) ShowChangedDisplayNotification(displayMonitor);
         // add displayMonitor to a collection here
@@ -58,10 +76,22 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
 
     private async void Watcher_Removed(DeviceWatcher sender, DeviceInformationUpdate args)
     {
-        DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(args.Id);
-        if(_initialized) ShowChangedDisplayNotification(displayMonitor);
-        // remove displayMonitor from collection here
-        Debug.WriteLine($"DisplayWatcher: DisplayMonitor Removed: {displayMonitor.DisplayName} ({displayMonitor.NativeResolutionInRawPixels.Width}x{displayMonitor.NativeResolutionInRawPixels.Height})");
+        if (_deviceCounter >= _deviceReferenceCounter && !_initialized)
+        {
+            _initialized = true;
+        }
+
+        try
+        {
+            DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(args.Id);
+            if (_initialized) ShowChangedDisplayNotification(displayMonitor);
+            // remove displayMonitor from collection here
+            Debug.WriteLine($"DisplayWatcher: DisplayMonitor Removed: {displayMonitor.DisplayName} ({displayMonitor.NativeResolutionInRawPixels.Width}x{displayMonitor.NativeResolutionInRawPixels.Height})");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Exception: {ex.Message}");
+        }
     }
 
     private void ShowChangedDisplayNotification(DisplayMonitor changedMonitor)

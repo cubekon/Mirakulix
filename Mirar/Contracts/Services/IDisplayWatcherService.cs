@@ -11,6 +11,8 @@ public interface IDisplayWatcherService
 {
     event TypedEventHandler<object, DisplayMonitor> DisplayAdapterChanged;
 
+    Task InitializeAsync();
+
     Task StartWatcherAsync();
     Task StopWatcherAsync();
 }

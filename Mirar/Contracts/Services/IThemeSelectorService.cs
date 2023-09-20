@@ -1,10 +1,16 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml;
 
 namespace Mirar.Contracts.Services;
 
 public interface IThemeSelectorService
 {
     ElementTheme Theme
+    {
+        get;
+    }
+
+    ObservableCollection<ElementTheme> ThemeList
     {
         get;
     }

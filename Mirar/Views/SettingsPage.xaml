@@ -10,61 +10,10 @@
     xmlns:c="using:Mirar.Controls"
     xmlns:models="using:Mirar.Models"
     xmlns:views="using:Mirar.Views"
+    xmlns:devices="using:Windows.Devices.Display"
     mc:Ignorable="d">
     <Page.Resources>
-        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
         <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
-
-        <DataTemplate x:Key="ItemTemplate" x:DataType="models:Display">
-            <Grid Height="60">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel
-                    Grid.Column="1"
-                    Margin="{StaticResource SmallLeftMargin}"
-                    VerticalAlignment="Center">
-                    <TextBlock Text="{x:Bind DeviceName}" Style="{StaticResource ListTitleStyle}" />
-                    <TextBlock Text="{x:Bind}" Style="{StaticResource ListSubTitleStyle}" />
-                </StackPanel>
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="DetailsTemplate">
-            <Grid>
-                <views:DisplayDetailControl DisplayDetailItem="{Binding}" />
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="NoSelectionContentTemplate">
-            <Grid>
-                <TextBlock
-            x:Uid="List_NoSelection"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            TextAlignment="Center"
-            Style="{ThemeResource SubtitleTextBlockStyle}" />
-            </Grid>
-        </DataTemplate>
-
-        <DataTemplate x:Key="ListHeaderTemplate">
-            <Grid Height="40">
-                <TextBlock
-            VerticalAlignment="Center"
-            Style="{StaticResource ListTitleStyle}"
-            Text="{Binding}" />
-            </Grid>
-        </DataTemplate>
-        <DataTemplate x:Key="MinimalListHeaderTemplate">
-            <Grid Height="40">
-                <TextBlock
-            Margin="96,0,0,0"
-            VerticalAlignment="Center"
-            Style="{StaticResource ListTitleStyle}"
-            Text="{Binding}" />
-            </Grid>
-        </DataTemplate>
     </Page.Resources>
 
     <Grid>
@@ -77,7 +26,10 @@
                     <FontIcon FontSize="24" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBC6;"/>
                 </c:OptionSelectorControl.Icon>
                 <c:OptionSelectorControl.Container>
-                    <ComboBox PlaceholderText="select" Width="200" ItemsSource="{x:Bind ViewModel.AvailableDisplays, Mode=OneWay}" />
+                    <ComboBox PlaceholderText="select" MinWidth="200" 
+                              ItemsSource="{x:Bind ViewModel.AvailableDisplays, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.SelectedDisplay, Mode=OneWay}"
+                              SelectionChanged="{x:Bind ViewModel.Display_SelectionChanged}"/>
                 </c:OptionSelectorControl.Container>
             </c:OptionSelectorControl>
 

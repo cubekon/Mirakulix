@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Collections.ObjectModel;
+using Microsoft.UI.Xaml;
 
 using Mirar.Contracts.Services;
 using Mirar.Helpers;
@@ -11,11 +12,15 @@ public class ThemeSelectorService : IThemeSelectorService
 
     public ElementTheme Theme { get; set; } = ElementTheme.Default;
 
+    public ObservableCollection<ElementTheme> ThemeList { get; set; } = new ObservableCollection<ElementTheme>();
+
     private readonly ILocalSettingsService _localSettingsService;
 
     public ThemeSelectorService(ILocalSettingsService localSettingsService)
     {
         _localSettingsService = localSettingsService;
+
+        GetThemes();
     }
 
     public async Task InitializeAsync()
@@ -57,6 +62,16 @@ public class ThemeSelectorService : IThemeSelectorService
         }
 
         return ElementTheme.Default;
+    }
+
+    private void GetThemes()
+    {
+        ThemeList.Clear();
+
+        foreach (ElementTheme theme in Enum.GetValues(typeof(ElementTheme)))
+        {
+            ThemeList.Add(theme);
+        }
     }
 
     private async Task SaveThemeInSettingsAsync(ElementTheme theme)

@@ -1,20 +1,14 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
-using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
 using Mirar.Contracts.Services;
 using Mirar.Helpers;
 using Mirar.Models;
 using Windows.ApplicationModel;
 using Windows.Devices.Display;
-using Windows.Devices.Display.Core;
 using Windows.Devices.Enumeration;
-using Windows.UI.Core;
 
 namespace Mirar.ViewModels;
 
@@ -31,27 +25,27 @@ public partial class SettingsViewModel : ObservableRecipient
     private string _versionDescription;
 
     [ObservableProperty]
-    private DisplayMonitor? _selectedDisplay;
+    private DisplayModel? _selectedDisplay;
 
     [ObservableProperty]
     private string? _selectedTheme;
 
     public ObservableCollection<ElementTheme> AvailableThemes { get; private set; } = new ObservableCollection<ElementTheme> ();
 
-    public ObservableCollection<DisplayMonitor> AvailableDisplays { get; private set; } = new ObservableCollection<DisplayMonitor>();
+    public ObservableCollection<DisplayModel> AvailableDisplays { get; private set; } = new ObservableCollection<DisplayModel>();
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, IDisplaySelectorService displaySelectorService)
     {
         // Theme
         _themeSelectorService = themeSelectorService;
+        AvailableThemes = _themeSelectorService.ThemeList;
         _elementTheme = _themeSelectorService.Theme;
-        GetAllThemes();
 
         // Display
         _displaySelectorService = displaySelectorService;
-        _displaySelectorService.DisplayAdapterChanged += OnDisplayAdapterChanged;
+        AvailableDisplays = _displaySelectorService.AvailableDisplays;
         _selectedDisplay = _displaySelectorService.CurrentDisplay;
-        GetAllDisplays();
+        _displaySelectorService.DisplayAdapterChanged += OnDisplayAdapterChanged;
 
         // Description
         _versionDescription = GetVersionDescription();
@@ -60,34 +54,32 @@ public partial class SettingsViewModel : ObservableRecipient
     private void OnDisplayAdapterChanged(object sender, DisplayMonitor dm)
     {
         // TODO: Enhance addition / deletion of single DisplayMonitor
-        GetAllDisplays();
-    }
+        //App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+        //{
+        //    AvailableDisplays.Clear();
+        //    AvailableDisplays = _displaySelectorService.AvailableDisplays;
+        //});
 
-    private void GetAllDisplays()
-    {
         App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
         {
-            AvailableDisplays.Clear();
-
-            var deviceSelector = DisplayMonitor.GetDeviceSelector();
-            var displays = await DeviceInformation.FindAllAsync(deviceSelector);
-
-            foreach (DeviceInformation displayInfo in displays)
-            {
-                DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(displayInfo.Id);
-
-                AvailableDisplays.Add(displayMonitor);
-            }
+            await _displaySelectorService.UpdateAvailableDisplaysAsync();
+            SelectedDisplay = _displaySelectorService.CurrentDisplay;
         });
+        
     }
 
-    private void GetAllThemes()
+    public async void Display_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        AvailableThemes.Clear();
+        ComboBox comboBox = (ComboBox)sender;
 
-        foreach(ElementTheme theme in Enum.GetValues(typeof(ElementTheme)))
+        DisplayModel newSelection = (DisplayModel)comboBox.SelectedValue;
+
+        if(newSelection == null) return;
+
+        if(SelectedDisplay != newSelection)
         {
-            AvailableThemes.Add(theme);
+            SelectedDisplay = newSelection;
+            await _displaySelectorService.SetDisplayAsync(newSelection);
         }
     }
 

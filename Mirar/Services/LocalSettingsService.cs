@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Options;
 
 using Mirar.Contracts.Services;
 using Mirar.Core.Contracts.Services;
@@ -13,7 +14,7 @@ namespace Mirar.Services;
 
 public class LocalSettingsService : ILocalSettingsService
 {
-    private const string _defaultApplicationDataFolder = "Mirar/ApplicationData";
+    private const string _defaultApplicationDataFolder = "Mirar\\ApplicationData";
     private const string _defaultLocalSettingsFile = "LocalSettings.json";
 
     private readonly IFileService _fileService;
@@ -52,6 +53,8 @@ public class LocalSettingsService : ILocalSettingsService
     {
         if (RuntimeHelper.IsMSIX)
         {
+            Debug.WriteLine(ApplicationData.Current.LocalFolder.Path);
+
             if (ApplicationData.Current.LocalSettings.Values.TryGetValue(key, out var obj))
             {
                 return await Json.ToObjectAsync<T>((string)obj);

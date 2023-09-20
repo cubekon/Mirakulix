@@ -13,13 +13,15 @@ public class ActivationService : IActivationService
     private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
+    private readonly IDisplaySelectorService _displaySelectorService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService)
+    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService, IDisplaySelectorService displaySelectorService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
+        _displaySelectorService = displaySelectorService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -68,8 +70,16 @@ public class ActivationService : IActivationService
 
     private async Task InitializeAsync()
     {
-        // Load Theme from LocalSettings using ThemeSelectorService.
+        // TODO: Implement a safety mechanism, that does not load user settings in case of a bad configuration value.
+        // For example:
+        // Open Application with Paramter eg. --ignore-settings
+        // skip loading user settings on application startup
+
+        // edit user settings manually -> https://lunarfrog.com/blog/inspect-app-settings
+
+        // Load Settings from LocalSettings.
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
+        await _displaySelectorService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
 

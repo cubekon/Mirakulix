@@ -8,9 +8,9 @@ using Mirar.Models;
 namespace Mirar.Views;
 public sealed partial class DisplayDetailControl : UserControl
 {
-    public Display? DisplayDetailItem
+    public DisplayModel? DisplayDetailItem
     {
-        get => GetValue(DisplayDetailItemProperty) as Display;
+        get => GetValue(DisplayDetailItemProperty) as DisplayModel;
         set => SetValue(DisplayDetailItemProperty, value);
     }
 
@@ -19,7 +19,7 @@ public sealed partial class DisplayDetailControl : UserControl
         InitializeComponent();
     }
 
-    public static readonly DependencyProperty DisplayDetailItemProperty = DependencyProperty.Register("DisplayDetailItem", typeof(Display), typeof(ListDetailControl), new PropertyMetadata(null, OnDisplayDetailItemPropertyChanged));
+    public static readonly DependencyProperty DisplayDetailItemProperty = DependencyProperty.Register("DisplayDetailItem", typeof(DisplayModel), typeof(ListDetailControl), new PropertyMetadata(null, OnDisplayDetailItemPropertyChanged));
 
     private static void OnDisplayDetailItemPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {

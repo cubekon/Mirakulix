@@ -11,13 +11,17 @@ using Windows.Devices.Enumeration;
 using System.Diagnostics;
 using Mirar.Helpers;
 using CommunityToolkit.WinUI;
+using System.Collections.ObjectModel;
+using Microsoft.UI.Dispatching;
 
 namespace Mirar.Services;
 public class DisplaySelectorService : IDisplaySelectorService, IDisposable
 {
     private const string SettingsKey = "ProjectorDisplay";
 
-    public DisplayMonitor? CurrentDisplay { get; set; } = null;
+    public DisplayModel CurrentDisplay { get; set; } = new DisplayModel();
+
+    public ObservableCollection<DisplayModel> AvailableDisplays { get; set; } = new ObservableCollection<DisplayModel>();
 
     public event TypedEventHandler<object, DisplayMonitor>? DisplayAdapterChanged;
 
@@ -32,36 +36,92 @@ public class DisplaySelectorService : IDisplaySelectorService, IDisposable
         _displayWatcherService.DisplayAdapterChanged += OnDisplayAdapterChanged;
     }
 
+    private async Task GetDisplaysAsync()
+    {
+        
+        AvailableDisplays.Clear();
+
+        var deviceSelector = DisplayMonitor.GetDeviceSelector();
+        var displays = await DeviceInformation.FindAllAsync(deviceSelector);
+
+        foreach (DeviceInformation displayInfo in displays)
+        {
+            DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(displayInfo.Id);
+
+            DisplayModel displayModel = new(displayMonitor);
+
+            AvailableDisplays.Add(displayModel);
+        }
+
+        // prevent losing display selection in settings
+        await RestorePreviousDisplayAsync();
+
+        await Task.CompletedTask;
+    }
+
+    public async Task UpdateAvailableDisplaysAsync()
+    {
+        await GetDisplaysAsync();
+    }
+
     private void OnDisplayAdapterChanged(object sender, DisplayMonitor dm)
     {
         Debug.WriteLine("DisplaySelectorService: DisplayAdapterChanged triggered");
         DisplayAdapterChanged?.Invoke(sender, dm);
     }
 
+    private async Task RestorePreviousDisplayAsync()
+    {
+        // Load Previous Display Setting
+        DisplayModel? loadedDisplay = await LoadDisplayFromSettingsAsync();
+
+        if (AvailableDisplays.Count < 1) return;
+        if (loadedDisplay == null) return;
+
+
+        var lastDisplay = AvailableDisplays.Where(x => x.DeviceId == loadedDisplay.DeviceId).FirstOrDefault();
+        if (lastDisplay == null) return;
+
+        CurrentDisplay = lastDisplay;
+    }
+
     public async Task InitializeAsync()
     {
-        CurrentDisplay = await LoadDisplayFromSettingsAsync();
+        await GetDisplaysAsync();
+
+        await RestorePreviousDisplayAsync();
+
         await Task.CompletedTask;
     }
 
-    public async Task SetDisplayAsync(DisplayMonitor display)
+    public async Task SetDisplayAsync(DisplayModel display)
     {
         CurrentDisplay = display;
         await SaveDisplayInSettingsAsync(display);
     }
 
-    private async Task<DisplayMonitor> LoadDisplayFromSettingsAsync()
+    private async Task<DisplayModel?> LoadDisplayFromSettingsAsync()
     {
         var displayIdFromSettings = await _localSettingsService.ReadSettingAsync<string>(SettingsKey);
 
-        // TODO: Restore DisplayMonitor Instance from displayIdFromSettings
+        if (displayIdFromSettings == null) return null;
 
-        return DisplayMonitor.FromInterfaceIdAsync(displayIdFromSettings).GetResults();
+        try
+        {
+            DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(displayIdFromSettings);
+            return new DisplayModel(displayMonitor);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex);
+            return null;
+        }
+
     }
 
-    private async Task SaveDisplayInSettingsAsync(DisplayMonitor displayToSave)
+    private async Task SaveDisplayInSettingsAsync(DisplayModel displayToSave)
     {
-        await _localSettingsService.SaveSettingAsync(SettingsKey, displayToSave.DisplayAdapterDeviceId);
+        await _localSettingsService.SaveSettingAsync(SettingsKey, displayToSave.DeviceId);
     }
 
     public void Dispose()

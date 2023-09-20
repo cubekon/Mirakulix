@@ -106,7 +106,15 @@ public partial class App : Application
             services.AddTransient<PictureFrame>();
 
             // Configuration
-            services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
+            //services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
+
+            services.Configure<LocalSettingsOptions>(options =>
+            {
+                options.ApplicationDataFolder = "Mirar\\AppData";
+                options.LocalSettingsFile = "test.json";
+            });
+
+
         }).
         Build();
 
@@ -137,7 +145,7 @@ public partial class App : Application
             - Load Shell
             - Activate MainWindow
         */
-        await App.GetService<IDisplayWatcherService>().StartWatcherAsync();
+        await App.GetService<IDisplayWatcherService>().InitializeAsync();
 
         await App.GetService<IActivationService>().ActivateAsync(args);
     }
