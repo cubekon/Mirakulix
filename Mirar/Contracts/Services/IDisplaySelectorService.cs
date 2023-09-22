@@ -19,8 +19,12 @@ public interface IDisplaySelectorService
 
     event TypedEventHandler<object, DisplayMonitor> DisplayAdapterChanged;
 
+    event TypedEventHandler<object, DisplayMonitor> ProjectorDisplayChanged;
+
     Task InitializeAsync();
     Task SetDisplayAsync(DisplayModel display);
+
+    Task SaveDisplayInSettingsAsync(DisplayModel displayToSave);
 
     Task UpdateAvailableDisplaysAsync();
 }

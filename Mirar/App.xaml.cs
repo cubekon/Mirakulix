@@ -105,6 +105,8 @@ public partial class App : Application
             // Projector
             services.AddTransient<PictureFrame>();
 
+            services.AddTransient<ProjectorViewModel>();
+
             // Configuration
             //services.Configure<LocalSettingsOptions>(context.Configuration.GetSection(nameof(LocalSettingsOptions)));
 

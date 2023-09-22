@@ -18,47 +18,66 @@ public partial class SettingsViewModel : ObservableRecipient
 
     private readonly IDisplaySelectorService _displaySelectorService;
 
-    [ObservableProperty]
-    private ElementTheme _elementTheme;
+    // ----- Header -----
 
     [ObservableProperty]
-    private string _versionDescription;
+    private string displayName = string.Empty;
 
+    [ObservableProperty]
+    private string displayOutputDevice = string.Empty;
+
+    [ObservableProperty]
+    private string displayResolution = string.Empty;
+
+    [ObservableProperty]
+    private string displayFrequency = string.Empty;
+
+
+    // ----- OptionSelectors -----
+
+    // Projector Display
     [ObservableProperty]
     private DisplayModel? _selectedDisplay;
 
+    public ObservableCollection<DisplayModel> AvailableDisplays { get; private set; } = new ObservableCollection<DisplayModel>();
+
+    // Theme
     [ObservableProperty]
     private string? _selectedTheme;
 
-    public ObservableCollection<ElementTheme> AvailableThemes { get; private set; } = new ObservableCollection<ElementTheme> ();
+    [ObservableProperty]
+    private ElementTheme _elementTheme;
 
-    public ObservableCollection<DisplayModel> AvailableDisplays { get; private set; } = new ObservableCollection<DisplayModel>();
+    public ObservableCollection<ElementTheme> AvailableThemes { get; private set; } = new ObservableCollection<ElementTheme>();
+
+    // Version Description
+    [ObservableProperty]
+    private string _versionDescription;
+
 
     public SettingsViewModel(IThemeSelectorService themeSelectorService, IDisplaySelectorService displaySelectorService)
     {
-        // Theme
-        _themeSelectorService = themeSelectorService;
-        AvailableThemes = _themeSelectorService.ThemeList;
-        _elementTheme = _themeSelectorService.Theme;
-
-        // Display
+        // Projector Display
         _displaySelectorService = displaySelectorService;
         AvailableDisplays = _displaySelectorService.AvailableDisplays;
         _selectedDisplay = _displaySelectorService.CurrentDisplay;
         _displaySelectorService.DisplayAdapterChanged += OnDisplayAdapterChanged;
 
-        // Description
+        // Header
+        // -- references Projector Display --
+
+        // Theme
+        _themeSelectorService = themeSelectorService;
+        AvailableThemes = _themeSelectorService.ThemeList;
+        _elementTheme = _themeSelectorService.Theme;
+
+        // Version Description
         _versionDescription = GetVersionDescription();
     }
 
     private void OnDisplayAdapterChanged(object sender, DisplayMonitor dm)
     {
         // TODO: Enhance addition / deletion of single DisplayMonitor
-        //App.MainWindow.DispatcherQueue.TryEnqueue(() =>
-        //{
-        //    AvailableDisplays.Clear();
-        //    AvailableDisplays = _displaySelectorService.AvailableDisplays;
-        //});
 
         App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
         {
@@ -80,6 +99,7 @@ public partial class SettingsViewModel : ObservableRecipient
         {
             SelectedDisplay = newSelection;
             await _displaySelectorService.SetDisplayAsync(newSelection);
+            await _displaySelectorService.SaveDisplayInSettingsAsync(newSelection);
         }
     }
 

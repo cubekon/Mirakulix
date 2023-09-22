@@ -9,7 +9,7 @@
     MinWidth="500"
     MinHeight="500"
     PersistenceId="ProjectorWindow"
-    IsMaximizable="False"
+    IsMaximizable="True"
     IsMinimizable="False"
     IsAlwaysOnTop="False"
     IsResizable="False"

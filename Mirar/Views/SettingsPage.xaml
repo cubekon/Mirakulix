@@ -17,24 +17,44 @@
     </Page.Resources>
 
     <Grid>
-        <StackPanel x:Name="ContentArea">
+        <StackPanel x:Name="ContentArea" Spacing="0">
 
-            <TextBlock x:Uid="Settings_Projector" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <Grid ColumnSpacing="16" Margin="{StaticResource SmallTopMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-            <c:OptionSelectorControl x:Uid="Settings_Projector_Display">
-                <c:OptionSelectorControl.Icon>
-                    <FontIcon FontSize="24" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBC6;"/>
-                </c:OptionSelectorControl.Icon>
-                <c:OptionSelectorControl.Container>
-                    <ComboBox PlaceholderText="select" MinWidth="200" 
+                <Border Background="{ThemeResource LayerOnMicaBaseAltFillColorSecondaryBrush}" CornerRadius="4" Padding="7">
+                    <Image Stretch="UniformToFill" Source="/Assets/mountain-preview.jpg" Width="210" Height="120"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" Spacing="4">
+                    <TextBlock Text="Surface Panel" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="{StaticResource XSmallTopBottomMargin}"/>
+                    <TextBlock Text="Output Device: Intel(R) Iris(R) Plus Graphics" Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Text="Resolution: 2736 x 1824" Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Text="Frequency: 59 Hz" Style="{ThemeResource BodyTextBlockStyle}" />
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Margin="{StaticResource SmallTopMargin}">
+                <!--<TextBlock x:Uid="Settings_Projector" Style="{ThemeResource SubtitleTextBlockStyle}" />-->
+
+                <c:OptionSelectorControl x:Uid="Settings_Projector_Display">
+                    <c:OptionSelectorControl.Icon>
+                        <FontIcon FontSize="24" FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xEBC6;"/>
+                    </c:OptionSelectorControl.Icon>
+                    <c:OptionSelectorControl.Container>
+                        <ComboBox PlaceholderText="select" MinWidth="200" 
                               ItemsSource="{x:Bind ViewModel.AvailableDisplays, Mode=OneWay}"
                               SelectedItem="{x:Bind ViewModel.SelectedDisplay, Mode=OneWay}"
                               SelectionChanged="{x:Bind ViewModel.Display_SelectionChanged}"/>
-                </c:OptionSelectorControl.Container>
-            </c:OptionSelectorControl>
+                    </c:OptionSelectorControl.Container>
+                </c:OptionSelectorControl>
+            </StackPanel>
 
-            <StackPanel Margin="{StaticResource LargeTopMargin}">
-                <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
+            <StackPanel>
+                <!--<TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />-->
 
                 <c:OptionSelectorControl x:Uid="Settings_Theme">
                     <c:OptionSelectorControl.Icon>
@@ -48,42 +68,6 @@
                     </c:OptionSelectorControl.Container>
                 </c:OptionSelectorControl>
             </StackPanel>
-
-            <!--<StackPanel Margin="{StaticResource SmallTopBottomMargin}">
-
-                <StackPanel Margin="{StaticResource XSmallTopMargin}">
-                    <RadioButton
-                        x:Uid="Settings_Theme_Light"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Light</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Dark"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Dark</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                    <RadioButton
-                        x:Uid="Settings_Theme_Default"
-                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
-                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
-                        FontSize="15"
-                        GroupName="AppTheme">
-                        <RadioButton.CommandParameter>
-                            <xaml:ElementTheme>Default</xaml:ElementTheme>
-                        </RadioButton.CommandParameter>
-                    </RadioButton>
-                </StackPanel>
-            </StackPanel>-->
 
             <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="{StaticResource LargeTopMargin}" />
 

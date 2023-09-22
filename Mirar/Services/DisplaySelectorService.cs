@@ -25,6 +25,8 @@ public class DisplaySelectorService : IDisplaySelectorService, IDisposable
 
     public event TypedEventHandler<object, DisplayMonitor>? DisplayAdapterChanged;
 
+    public event TypedEventHandler<object, DisplayMonitor>? ProjectorDisplayChanged;
+
     private readonly ILocalSettingsService _localSettingsService;
 
     private readonly IDisplayWatcherService _displayWatcherService;
@@ -82,7 +84,7 @@ public class DisplaySelectorService : IDisplaySelectorService, IDisposable
         var lastDisplay = AvailableDisplays.Where(x => x.DeviceId == loadedDisplay.DeviceId).FirstOrDefault();
         if (lastDisplay == null) return;
 
-        CurrentDisplay = lastDisplay;
+        await SetDisplayAsync(lastDisplay);
     }
 
     public async Task InitializeAsync()
@@ -97,7 +99,11 @@ public class DisplaySelectorService : IDisplaySelectorService, IDisposable
     public async Task SetDisplayAsync(DisplayModel display)
     {
         CurrentDisplay = display;
-        await SaveDisplayInSettingsAsync(display);
+
+        DisplayMonitor displayMonitor = await DisplayMonitor.FromInterfaceIdAsync(display.DeviceId);
+        ProjectorDisplayChanged?.Invoke(this, displayMonitor);
+
+        await Task.CompletedTask;
     }
 
     private async Task<DisplayModel?> LoadDisplayFromSettingsAsync()
@@ -119,7 +125,7 @@ public class DisplaySelectorService : IDisplaySelectorService, IDisposable
 
     }
 
-    private async Task SaveDisplayInSettingsAsync(DisplayModel displayToSave)
+    public async Task SaveDisplayInSettingsAsync(DisplayModel displayToSave)
     {
         await _localSettingsService.SaveSettingAsync(SettingsKey, displayToSave.DeviceId);
     }
