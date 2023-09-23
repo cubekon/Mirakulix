@@ -1,14 +1,16 @@
 ﻿using System.Collections.ObjectModel;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Mirar.Contracts.Services;
 using Mirar.Helpers;
-using Mirar.Models;
+using Mirar.Views.Projector;
 using Windows.ApplicationModel;
 using Windows.Devices.Display;
 using Windows.Devices.Enumeration;
+using WindowsDisplayAPI;
 
 namespace Mirar.ViewModels;
 
@@ -16,7 +18,7 @@ public partial class SettingsViewModel : ObservableRecipient
 {
     private readonly IThemeSelectorService _themeSelectorService;
 
-    private readonly IDisplaySelectorService _displaySelectorService;
+    private readonly IDisplayService _displayService;
 
     // ----- Header -----
 
@@ -37,9 +39,9 @@ public partial class SettingsViewModel : ObservableRecipient
 
     // Projector Display
     [ObservableProperty]
-    private DisplayModel? _selectedDisplay;
+    private Display? _selectedDisplay;
 
-    public ObservableCollection<DisplayModel> AvailableDisplays { get; private set; } = new ObservableCollection<DisplayModel>();
+    public ObservableCollection<Display> AvailableDisplays { get; private set; } = new ObservableCollection<Display>();
 
     // Theme
     [ObservableProperty]
@@ -54,17 +56,17 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private string _versionDescription;
 
+    // ----- Properties -----
 
-    public SettingsViewModel(IThemeSelectorService themeSelectorService, IDisplaySelectorService displaySelectorService)
+    [ObservableProperty]
+    private bool _isInDemoMode = App.ProjectorWindow.ViewModel.ContentFrame is DemoFrame;
+
+    public SettingsViewModel(IThemeSelectorService themeSelectorService, IDisplayService displayService)
     {
         // Projector Display
-        _displaySelectorService = displaySelectorService;
-        AvailableDisplays = _displaySelectorService.AvailableDisplays;
-        _selectedDisplay = _displaySelectorService.CurrentDisplay;
-        _displaySelectorService.DisplayAdapterChanged += OnDisplayAdapterChanged;
-
-        // Header
-        // -- references Projector Display --
+        _displayService = displayService;
+        _displayService.DisplayAdaptersChanged += OnDisplayAdaptersChanged;
+        _displayService.ActiveDisplayChanged += OnActiveDisplayChanged;
 
         // Theme
         _themeSelectorService = themeSelectorService;
@@ -74,32 +76,51 @@ public partial class SettingsViewModel : ObservableRecipient
         // Version Description
         _versionDescription = GetVersionDescription();
     }
-
-    private void OnDisplayAdapterChanged(object sender, DisplayMonitor dm)
+    public async Task InitializeDisplaysAsync()
     {
-        // TODO: Enhance addition / deletion of single DisplayMonitor
+        var displays = await _displayService.GetDisplaysAsync();
 
-        App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+        foreach (var display in displays)
         {
-            await _displaySelectorService.UpdateAvailableDisplaysAsync();
-            SelectedDisplay = _displaySelectorService.CurrentDisplay;
-        });
-        
+            AvailableDisplays.Add(display);
+        }
+
+        SelectedDisplay = SelectedDisplay = AvailableDisplays.Where(d => d.DevicePath == _displayService.ActiveDisplay?.DevicePath).FirstOrDefault();
+
+        await UpdateDisplayHeader();
+    }
+
+    // ----- Relay Commands -----
+
+    [RelayCommand]
+    private void ActivateDemo()
+    {
+        _isInDemoMode = !_isInDemoMode;
+
+        if (_isInDemoMode)
+        {
+            App.ProjectorWindow.ViewModel.ContentFrame = App.GetService<DemoFrame>();
+        }
+        else
+        {
+            App.ProjectorWindow.ViewModel.ContentFrame = App.GetService<PictureFrame>();
+        }   
     }
 
     public async void Display_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         ComboBox comboBox = (ComboBox)sender;
 
-        DisplayModel newSelection = (DisplayModel)comboBox.SelectedValue;
+        Display newSelection = (Display)comboBox.SelectedValue;
 
-        if(newSelection == null) return;
+        if (newSelection == null) return;
 
-        if(SelectedDisplay != newSelection)
+        if (SelectedDisplay != newSelection)
         {
             SelectedDisplay = newSelection;
-            await _displaySelectorService.SetDisplayAsync(newSelection);
-            await _displaySelectorService.SaveDisplayInSettingsAsync(newSelection);
+            await UpdateDisplayHeader();
+
+            await _displayService.SetActiveDisplayAsync(newSelection);
         }
     }
 
@@ -118,6 +139,64 @@ public partial class SettingsViewModel : ObservableRecipient
             ElementTheme = newTheme;
             await _themeSelectorService.SetThemeAsync(newTheme);
         }
+    }
+
+    // Future functionality: if display gets changed elsewhere, update the UI
+    private async void OnActiveDisplayChanged(object sender, Display? display)
+    {
+        await Task.Run(() =>
+        {
+            App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+            {
+                if (SelectedDisplay != display) 
+                {
+                    SelectedDisplay = AvailableDisplays.Where(d => d.DevicePath == _displayService.ActiveDisplay?.DevicePath).FirstOrDefault();
+                    // Update Header
+                    await UpdateDisplayHeader();
+                }
+            });
+        });
+    }
+
+    private async void OnDisplayAdaptersChanged(object sender, List<Display> availableDisplays)
+    {
+        await Task.Run(() =>
+        {
+            App.MainWindow.DispatcherQueue.TryEnqueue(() =>
+            {
+                AvailableDisplays.Clear();
+
+
+                foreach (var display in availableDisplays)
+                {
+                    AvailableDisplays.Add(display);
+                }
+
+                SelectedDisplay = AvailableDisplays.Where(d => d.DevicePath == _displayService.ActiveDisplay?.DevicePath).FirstOrDefault();
+            });
+        });
+    }
+
+    private Task UpdateDisplayHeader()
+    {
+        Display? display = SelectedDisplay;
+
+        if (display == null)
+        {
+            DisplayName = "No Display Selected";
+            DisplayOutputDevice = string.Empty;
+            DisplayResolution = string.Empty;
+            DisplayFrequency = string.Empty;
+        }
+        else
+        {
+            DisplayName = display.DeviceName;
+            DisplayOutputDevice = $"Output Device: {display.Adapter.DeviceName}";
+            DisplayResolution = $"Resolution: {display.CurrentSetting.Resolution.Width} x {display.CurrentSetting.Resolution.Height}";
+            DisplayFrequency = $"Frequency: {display.CurrentSetting.Frequency} Hz";
+        }
+
+        return Task.CompletedTask;
     }
 
     private static string GetVersionDescription()

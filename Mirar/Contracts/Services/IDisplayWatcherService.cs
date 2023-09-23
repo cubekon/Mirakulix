@@ -9,7 +9,7 @@ using Windows.Foundation;
 namespace Mirar.Contracts.Services;
 public interface IDisplayWatcherService
 {
-    event TypedEventHandler<object, DisplayMonitor> DisplayAdapterChanged;
+    event TypedEventHandler<object, DisplayMonitor> DisplayAdaptersChanged;
 
     Task InitializeAsync();
 

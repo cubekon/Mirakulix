@@ -1,6 +1,8 @@
-﻿using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 using Mirar.ViewModels;
+using Mirar.Views.Projector;
 
 namespace Mirar.Views;
 
@@ -16,5 +18,12 @@ public sealed partial class SettingsPage : Page
     {
         ViewModel = App.GetService<SettingsViewModel>();
         InitializeComponent();
+
+        Loaded += SettingsPage_Loaded;
+    }
+
+    private async void SettingsPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        await ViewModel.InitializeDisplaysAsync();
     }
 }

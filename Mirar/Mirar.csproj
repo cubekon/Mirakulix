@@ -21,6 +21,7 @@
     <None Remove="Controls\OptionSelectorControl.xaml" />
     <None Remove="Styles\ThemeBrushes.xaml" />
     <None Remove="Views\DisplayDetailControl.xaml" />
+    <None Remove="Views\Projector\DemoFrame.xaml" />
     <None Remove="Views\Projector\PictureFrame.xaml" />
     <None Remove="Views\Projector\ProjectorWindow.xaml" />
   </ItemGroup>
@@ -48,6 +49,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\Projector\DemoFrame.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Controls\OptionSelectorControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -72,4 +76,12 @@
   <PropertyGroup Condition="'$(DisableHasPackageAndPublishMenuAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
     <HasPackageAndPublishMenu>true</HasPackageAndPublishMenu>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\patri\source\repos\Mirar\Mirar\.editorconfig" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="C:\Users\patri\source\repos\Mirar\Mirar\.editorconfig" />
+  </ItemGroup>
 </Project>

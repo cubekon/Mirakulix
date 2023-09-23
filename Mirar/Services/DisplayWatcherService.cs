@@ -10,7 +10,7 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
 {
     public DeviceWatcher _watcher;
 
-    public event TypedEventHandler<object, DisplayMonitor>? DisplayAdapterChanged;
+    public event TypedEventHandler<object, DisplayMonitor>? DisplayAdaptersChanged;
 
     // Prevent displaying notification on first run / init
     private bool _initialized = false;
@@ -99,7 +99,7 @@ public class DisplayWatcherService : IDisplayWatcherService, IDisposable
         var notificationPayload = $"{ResourceExtensions.GetLocalized("DisplayAdapterUpdatedNotification")}";
         App.GetService<IAppNotificationService>().Show(notificationPayload);
 
-        DisplayAdapterChanged?.Invoke(this, changedMonitor);
+        DisplayAdaptersChanged?.Invoke(this, changedMonitor);
     }
 
     public async void Dispose()

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Runtime.Intrinsics.Arm;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Mirar.ViewModels;
 
 namespace Mirar.Views.Projector;
@@ -11,6 +12,8 @@ namespace Mirar.Views.Projector;
 /// </summary>
 public sealed partial class ProjectorWindow : WindowEx
 {
+    private bool _isInitialized;
+
     public ProjectorViewModel ViewModel
     {
         get;
@@ -22,26 +25,15 @@ public sealed partial class ProjectorWindow : WindowEx
 
         InitializeComponent();
 
-        Content = null;
-
-        this.Activated += ProjectorWindow_Activated;
-
-        this.SizeChanged += ProjectorWindow_SizeChanged;
+        Root.Loaded += Root_Loaded;
     }
 
-    private void ProjectorWindow_SizeChanged(object sender, WindowSizeChangedEventArgs args)
+    private async void Root_Loaded(object sender, RoutedEventArgs e)
     {
-        var width = args.Size.Width;
-        var height = args.Size.Height;
-        var dpi = this.GetDpiForWindow();
-
-        var desiredSize = new Windows.Foundation.Size(((float)2560 * 96.0f / dpi), ((float)1440 * 96.0f / dpi));
-
-        //Debug.WriteLine($"Width: {width} | Height: {height} | DPI: {dpi} | DS: {desiredSize.Width} | DS: {desiredSize.Height}");
-    }
-
-    private async void ProjectorWindow_Activated(object sender, WindowActivatedEventArgs args)
-    {
-        await ViewModel.InitializeAsync();
+        if (ViewModel != null && _isInitialized == false)
+        {
+            await ViewModel.InitializeAsync();
+            _isInitialized = true;
+        }
     }
 }

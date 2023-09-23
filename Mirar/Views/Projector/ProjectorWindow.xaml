@@ -19,4 +19,8 @@
     <Window.SystemBackdrop>
         <MicaBackdrop/>
     </Window.SystemBackdrop>
+
+    <Grid x:Name="Root" Background="Black">
+        <Frame Content="{x:Bind ViewModel.ContentFrame, Mode=OneWay}" />
+    </Grid>
 </windowex:WindowEx>

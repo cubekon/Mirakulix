@@ -13,15 +13,15 @@ public class ActivationService : IActivationService
     private readonly ActivationHandler<LaunchActivatedEventArgs> _defaultHandler;
     private readonly IEnumerable<IActivationHandler> _activationHandlers;
     private readonly IThemeSelectorService _themeSelectorService;
-    private readonly IDisplaySelectorService _displaySelectorService;
+    private readonly IDisplayService _displayService;
     private UIElement? _shell = null;
 
-    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService, IDisplaySelectorService displaySelectorService)
+    public ActivationService(ActivationHandler<LaunchActivatedEventArgs> defaultHandler, IEnumerable<IActivationHandler> activationHandlers, IThemeSelectorService themeSelectorService, IDisplayService displayService)
     {
         _defaultHandler = defaultHandler;
         _activationHandlers = activationHandlers;
         _themeSelectorService = themeSelectorService;
-        _displaySelectorService = displaySelectorService;
+        _displayService = displayService;
     }
 
     public async Task ActivateAsync(object activationArgs)
@@ -36,10 +36,10 @@ public class ActivationService : IActivationService
             App.MainWindow.Content = _shell ?? new Frame();
         }
 
-        if( App.ProjectorWindow.Content == null)
+        if (App.ProjectorWindow.ViewModel.ContentFrame == null)
         {
             _shell = App.GetService<PictureFrame>();
-            App.ProjectorWindow.Content = _shell ?? new Frame();
+            App.ProjectorWindow.ViewModel.ContentFrame = _shell ?? new Frame();
         }
 
         // Handle activation via ActivationHandlers.
@@ -79,7 +79,7 @@ public class ActivationService : IActivationService
 
         // Load Settings from LocalSettings.
         await _themeSelectorService.InitializeAsync().ConfigureAwait(false);
-        await _displaySelectorService.InitializeAsync().ConfigureAwait(false);
+        await _displayService.InitializeAsync().ConfigureAwait(false);
         await Task.CompletedTask;
     }
 

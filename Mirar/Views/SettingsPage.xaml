@@ -19,6 +19,8 @@
     <Grid>
         <StackPanel x:Name="ContentArea" Spacing="0">
 
+            <ToggleButton Content="Demo Mode" Command="{x:Bind ViewModel.ActivateDemoCommand}" IsChecked="{x:Bind ViewModel.IsInDemoMode, Mode=OneWay}" />
+
             <Grid ColumnSpacing="16" Margin="{StaticResource SmallTopMargin}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -30,10 +32,10 @@
                 </Border>
 
                 <StackPanel Grid.Column="1" Spacing="4">
-                    <TextBlock Text="Surface Panel" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="{StaticResource XSmallTopBottomMargin}"/>
-                    <TextBlock Text="Output Device: Intel(R) Iris(R) Plus Graphics" Style="{ThemeResource BodyTextBlockStyle}" />
-                    <TextBlock Text="Resolution: 2736 x 1824" Style="{ThemeResource BodyTextBlockStyle}" />
-                    <TextBlock Text="Frequency: 59 Hz" Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind ViewModel.DisplayName, Mode=OneWay}" Style="{ThemeResource SubtitleTextBlockStyle}" Margin="{StaticResource XSmallTopBottomMargin}"/>
+                    <TextBlock Text="{x:Bind ViewModel.DisplayOutputDevice, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind ViewModel.DisplayResolution, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
+                    <TextBlock Text="{x:Bind ViewModel.DisplayFrequency, Mode=OneWay}" Style="{ThemeResource BodyTextBlockStyle}" />
                 </StackPanel>
             </Grid>
 

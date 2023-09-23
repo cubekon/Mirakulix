@@ -45,7 +45,7 @@ public partial class App : Application
 
     public static WindowEx MainWindow { get; } = new MainWindow();
 
-    public static WindowEx ProjectorWindow { get; } = new ProjectorWindow();
+    public static ProjectorWindow ProjectorWindow { get; } = new ProjectorWindow();
 
     public static UIElement? AppTitlebar
     {
@@ -71,7 +71,7 @@ public partial class App : Application
             services.AddSingleton<IAppNotificationService, AppNotificationService>();
             services.AddSingleton<ILocalSettingsService, LocalSettingsService>();
             services.AddSingleton<IThemeSelectorService, ThemeSelectorService>();
-            services.AddSingleton<IDisplaySelectorService, DisplaySelectorService>();
+            services.AddSingleton<IDisplayService, DisplayService>();
             services.AddSingleton<IDisplayWatcherService, DisplayWatcherService>();
             services.AddTransient<IWebViewService, WebViewService>();
             services.AddTransient<INavigationViewService, NavigationViewService>();
@@ -104,6 +104,7 @@ public partial class App : Application
 
             // Projector
             services.AddTransient<PictureFrame>();
+            services.AddTransient<DemoFrame>();
 
             services.AddTransient<ProjectorViewModel>();
 

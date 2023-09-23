@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="Mirar.Views.Projector.PictureFrame"
+    x:Class="Mirar.Views.Projector.DemoFrame"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Mirar.Views.Projector"
@@ -9,7 +10,6 @@
     Background="{ThemeResource ProjectorFrameBackgroundThemeBrush}">
 
     <Grid>
-        <Image Source="/Assets/mountain-preview.jpg" Stretch="UniformToFill" Opacity="0.4" />
-        <TextBlock Text="- PICTURE FRAME -" Style="{StaticResource TitleLargeTextBlockStyle}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3" />
+        <TextBlock Text="DEMO" HorizontalAlignment="Center" VerticalAlignment="Center" />
     </Grid>
 </Page>

@@ -1,93 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Graphics.Display;
-using Microsoft.UI;
-using Microsoft.UI.Windowing;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
 using Mirar.Contracts.Services;
-using Mirar.Views.Projector;
-using Newtonsoft.Json.Linq;
-using Windows.Devices.Display;
-using Windows.Devices.Display.Core;
 using WindowsDisplayAPI;
-using WinUIEx;
 
 namespace Mirar.ViewModels;
-public class ProjectorViewModel : ObservableRecipient
+public partial class ProjectorViewModel : ObservableRecipient
 {
-    private readonly IDisplaySelectorService _displaySelectorService;
+    private readonly IDisplayService _displayService;
     private WindowEx? _projectorWindow;
 
+    [ObservableProperty]
+    private UIElement? _contentFrame;
 
-    public ProjectorViewModel(IDisplaySelectorService displaySelectorService)
+    public ProjectorViewModel(IDisplayService displayService)
     {
-        _displaySelectorService = displaySelectorService;
-        _displaySelectorService.ProjectorDisplayChanged += OnProjectorDisplayChanged;
+        _displayService = displayService;
+        _displayService.ActiveDisplayChanged += OnActiveDisplayChanged;
     }
 
     public async Task InitializeAsync()
     {
         _projectorWindow = App.ProjectorWindow;
+
+        await UpdateDisplayPosition(_displayService.ActiveDisplay);
+
         await Task.CompletedTask;
     }
 
-    private void OnProjectorDisplayChanged(object sender, DisplayMonitor display)
+    private async Task UpdateDisplayPosition(Display? display)
     {
+        if (display == null) return;
+
         if (_projectorWindow == null) return;
 
         _projectorWindow.Restore();
 
-        IReadOnlyList<DisplayArea> areas = DisplayArea.FindAll();
+        var displayPosX = display.CurrentSetting.Position.X;
+        var displayPosY = display.CurrentSetting.Position.Y;
 
-        //using (var mgr = DisplayManager.Create(DisplayManagerOptions.None))
-        //{
-        //    mgr.TryAcquireTarget(DisplayTarget.)
-        //}
+        var displayWidth = 100;
+        var displayHeight = 100;
 
-        for (int i = 0; i < areas.Count; i++)
-        {
-            var area = areas[i];
-
-            var test = Win32Interop.GetMonitorFromDisplayId(area.DisplayId);
-
-            DisplayInformation display1 = DisplayInformation.CreateForDisplayId(area.DisplayId);
-
-            var displayInfo = DisplayInformation.CreateForDisplayId(area.DisplayId);
-
-            Debug.WriteLine(area.ToString());
-        }
-
-        foreach (Display display2 in Display.GetDisplays())
-        {
-            var DisplayName = display2.DisplayName;
-            string Friendly = Regex.Replace(display2.DisplayName, @"[^A-Za+Z0-9 ]", "");
-            string Resolution = display2.CurrentSetting.Resolution.Width.ToString() + " x " + display2.CurrentSetting.Resolution.Height.ToString();
-            string Position = display2.CurrentSetting.Position.X.ToString() + " x " + display2.CurrentSetting.Position.Y.ToString();
-        }
-
-        // Random area
-        Random random = new Random();
-        var areaNr = random.Next(areas.Count);
-
-        // TODO: Set ProjectorWindow to selected Output Projector Display
-        float displayWidth = display.NativeResolutionInRawPixels.Width;
-        float displayHeight = display.NativeResolutionInRawPixels.Height;
-
-        var dpi = _projectorWindow.GetDpiForWindow();
-
-        var desiredSize = new Windows.Foundation.Size((displayWidth * 96.0f / dpi), (displayHeight * 96.0f / dpi));
-
-        _projectorWindow.MoveAndResize(areas[areaNr].WorkArea.X, areas[areaNr].WorkArea.Y, desiredSize.Width, desiredSize.Height);
+        _projectorWindow.MoveAndResize(displayPosX, displayPosY, displayWidth, displayHeight);
 
         _projectorWindow.Maximize();
 
-        Debug.WriteLine($"ProjectorDisplay Changed: {display.DeviceId}");
-        Debug.WriteLine($"Width: {displayWidth} | Height: {displayHeight} | DPI: {dpi} | DS: {desiredSize.Width} | DS: {desiredSize.Height}");
+        await Task.CompletedTask;
+    }
+
+    private async void OnActiveDisplayChanged(object sender, Display? display)
+    {
+        await Task.Run(() =>
+        {
+            App.MainWindow.DispatcherQueue.TryEnqueue(async () =>
+            {
+                await UpdateDisplayPosition(display);
+            });
+        });
     }
 }
